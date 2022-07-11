@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.0.1/wordcloud2.min.js"></script>
+<script>
+    let data = JSON.parse(`{{ words|safe }}`);
+    // from object to list [[key, value], [key, value], ...]
+    let list = Object.keys(data).map(function(key) {
+        return [key, data[key]];
+    });
+</script>
+<style>
+    body {
+        padding: 0;
+        margin: 0;
+
+    }
+</style>
+
+<script>
+    // create a canvas node
+    let canvas = document.createElement('canvas');
+    canvas.id = "the-canvas";
+    canvas.width = 5000;
+    canvas.height = 5000;
+    canvas.style = "width: 90%; height: 90%; margin: 5%";
+    document.getElementsByTagName('body')[0].appendChild(canvas);
+
+    WordCloud(document.getElementById("the-canvas"), {
+        list: list,
+        fontWeight: 6,
+        gridSize: Math.round(16 * canvas.width / 1024),
+        weightFactor: function (size) {
+            return Math.pow(size, 1.1) * canvas.width / 64;
+        },
+        fontFamily: 'Times, serif',
+        color: function (word, weight) {
+            return (weight === 12) ? '#000000' : '#010101';
+        },
+        backgroundColor: '#ffffff',
+    });
+
+    function printCanvas() {
+        let canvas = document.getElementById('the-canvas');
+        let image = canvas.toDataURL("image/png");
+        let link = document.createElement('a');
+        link.href = image;
+        link.download = "wordcloud.png";
+        link.click();
+    }
+</script>
+
+<button id="print" class="btn" onclick="printCanvas()">Print</button>
+{% endblock %}
